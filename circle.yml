@@ -6,6 +6,10 @@ checkout:
   post:
     - chmod +x gradlew
 
+test:
+  post:
+    - ./build.sh
+
 dependencies:
     override:
         - echo y | android update sdk --no-ui --all --filter "tools"
