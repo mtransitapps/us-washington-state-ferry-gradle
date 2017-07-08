@@ -1,0 +1,5 @@
+include ':app-android', // Android app
+        ':commons-android', // common code shared by all Android apps
+        ':agency-parser', // parser
+        ':parser', // common code shared by all parsers
+        ':commons' // common code shared by all

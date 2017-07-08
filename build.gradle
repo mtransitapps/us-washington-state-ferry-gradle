@@ -1,0 +1,19 @@
+apply from: "$project.rootDir/commons-android/commons-android.gradle";
+
+buildscript {
+    repositories {
+        jcenter()
+        maven { url "https://maven.google.com" }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.3.3'
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+        maven { url "https://maven.google.com" }
+    }
+}
+
