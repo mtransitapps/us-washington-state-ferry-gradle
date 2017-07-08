@@ -17,10 +17,6 @@ checkout:
     - chmod +x gradlew
     - chmod +x build.sh
 
-test:
-  override:
-    - ./build.sh
-
 dependencies:
     override:
         - echo y | android update sdk --no-ui --all --filter "tools" # to get the new `repository.xml`
@@ -33,3 +29,7 @@ dependencies:
         - echo y | android update sdk --no-ui --all --filter "extra-android-support"
         - echo y | android update sdk --no-ui --all --filter "extra-google-m2repository"
         - echo y | android update sdk --no-ui --all --filter "extra-android-m2repository"
+
+test:
+  override:
+    - ./build.sh
