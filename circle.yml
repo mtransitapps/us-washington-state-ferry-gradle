@@ -15,6 +15,7 @@ checkout:
     - git submodule update --init --recursive agency-parser
     - git submodule update --init --recursive app-android
     - chmod +x gradlew
+    - chmod +x build.sh
 
 test:
   override:
