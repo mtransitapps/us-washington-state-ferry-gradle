@@ -4,6 +4,11 @@ machine:
 
 checkout:
   post:
+    - git submodule update --init --recursive commons
+    - git submodule update --init --recursive commons-android
+    - git submodule update --init --recursive parser
+    - git submodule update --init --recursive agency-parser
+    - git submodule update --init --recursive app-android
     - chmod +x gradlew
 
 test:
