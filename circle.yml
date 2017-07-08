@@ -17,7 +17,7 @@ checkout:
     - chmod +x gradlew
 
 test:
-  post:
+  override:
     - ./build.sh
 
 dependencies:
