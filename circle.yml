@@ -16,6 +16,7 @@ checkout:
     - git submodule update --init --recursive app-android
     - chmod +x gradlew
     - chmod +x build.sh
+    - chmod +x app-android/build.sh
 
 dependencies:
     override:
