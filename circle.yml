@@ -20,16 +20,13 @@ checkout:
 
 dependencies:
     override:
-        - echo y | android update sdk --no-ui --all --filter "tools" # to get the new `repository.xml`
-        - echo y | android update sdk --no-ui --all --filter "platform-tools"
-        - echo y | android update sdk --no-ui --all --filter "tools" # to install Android SDK tools
-        - echo y | android update sdk --no-ui --all --filter "build-tools-$ANDROID_BUILD_TOOLS_VERSION"
-        - echo y | android update sdk --no-ui --all --filter "android-$ANDROID_API_LEVEL"
-        - echo y | android update sdk --no-ui --all --filter "addon-google_apis-google-$ANDROID_API_LEVEL"
-        - echo y | android update sdk --no-ui --all --filter "extra-google-google_play_services"
-        - echo y | android update sdk --no-ui --all --filter "extra-android-support"
-        - echo y | android update sdk --no-ui --all --filter "extra-google-m2repository"
-        - echo y | android update sdk --no-ui --all --filter "extra-android-m2repository"
+        - echo y | android update sdk --no-ui --all --filter "tool" # required for sdkmanager
+        - echo y | $ANDROID_HOME/tools/bin/sdkmanager "tools"
+        - echo y | $ANDROID_HOME/tools/bin/sdkmanager "platform-tools"
+        - echo y | $ANDROID_HOME/tools/bin/sdkmanager "build-tools;$ANDROID_BUILD_TOOLS_VERSION"
+        - echo y | $ANDROID_HOME/tools/bin/sdkmanager "extras;android;m2repository"
+        - echo y | $ANDROID_HOME/tools/bin/sdkmanager "extras;google;google_play_services"
+        - echo y | $ANDROID_HOME/tools/bin/sdkmanager "extras;google;m2repository"
 
 test:
   override:
