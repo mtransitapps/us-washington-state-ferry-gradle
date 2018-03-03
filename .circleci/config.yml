@@ -1,0 +1,49 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/mtransit
+    docker:
+      - image: circleci/android:api-27-alpha
+    environment:
+      JVM_OPTS: -Xmx3200m
+    steps:
+      - run:
+          name: Update SDK
+          command: echo y | $ANDROID_HOME/tools/bin/sdkmanager "build-tools;27.0.3" "platform-tools" "platforms;android-27"
+      - checkout
+      - run:
+          name: Checkout commons submodule
+          command: git submodule update --init --recursive commons
+      - run:
+          name: Checkout commons-android submodule
+          command: git submodule update --init --recursive commons-android
+      - run:
+          name: Checkout parser submodule
+          command: git submodule update --init --recursive parser
+      - run:
+          name: Checkout agency-parser submodule
+          command: git submodule update --init --recursive agency-parser
+      - run:
+          name: Checkout app-android submodule
+          command: git submodule update --init --recursive app-android
+      - restore_cache:
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum "commons-android/build.gradle" }}-{{ checksum "commons-android/commons-android.gradle" }}-{{ checksum "parser/build.gradle" }}-{{ checksum "agency-parser/build.gradle" }}-{{ checksum "app-android/build.gradle" }}
+      - run:
+          name: gradlew permissions
+          command: sudo chmod +x gradlew
+      - run:
+          name: build.sh permissions
+          command: sudo chmod +x build.sh
+      - run:
+          name: app-android/build.sh permissions
+          command: sudo chmod +x app-android/build.sh
+      - run:
+          name: Download Dependencies
+          command: ./gradlew androidDependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum "commons-android/build.gradle" }}-{{ checksum "commons-android/commons-android.gradle" }}-{{ checksum "parser/build.gradle" }}-{{ checksum "agency-parser/build.gradle" }}-{{ checksum "app-android/build.gradle" }}
+      - run:
+          name: Build
+          command: ./build.sh
