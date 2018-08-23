@@ -19,6 +19,10 @@ GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD);
 echo "GIT_BRANCH: $GIT_BRANCH.";
 RESULT=-1;
 CONFIRM=false;
+GRADLE_ARGS="";
+if [[ -z "${CI}" ]]; then
+	GRADLE_ARGS=" --console=plain";
+fi
 declare -a EXCLUDE=(".git" "test" "build" "gen" "gradle");
 
 echo "> CLEANING FOR '$AGENCY_ID'...";
@@ -55,9 +59,9 @@ for d in ${PWD}/* ; do
 	fi
 done
 echo "> CLEANING FOR '$AGENCY_ID'... (GRADLE BUILD)";
-./gradlew :parser:clean :parser:build;
+./gradlew :parser:clean :parser:build $GRADLE_ARGS;
 checkResult $? $CONFIRM;
-./gradlew :agency-parser:clean :agency-parser:build;
+./gradlew :agency-parser:clean :agency-parser:build $GRADLE_ARGS;
 checkResult $? $CONFIRM;
 echo "> CLEANING FOR '$AGENCY_ID'... DONE";
 

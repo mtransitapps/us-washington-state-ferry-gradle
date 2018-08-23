@@ -43,7 +43,7 @@ jobs:
           command: sudo chmod +x app-android/build.sh
       - run:
           name: Download Dependencies
-          command: ./gradlew androidDependencies
+          command: ./gradlew androidDependencies --console=plain
       - save_cache:
           paths:
             - ~/.gradle
