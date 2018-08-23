@@ -19,8 +19,13 @@ GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD);
 echo "GIT_BRANCH: $GIT_BRANCH.";
 RESULT=-1;
 CONFIRM=false;
+IS_CI=false;
+if [[ ! -z "${CI}" ]]; then
+	IS_CI=true;
+fi
+echo "/build.sh: IS_CI '${IS_CI}'";
 GRADLE_ARGS="";
-if [[ -z "${CI}" ]]; then
+if [ $IS_CI = true ]; then
 	GRADLE_ARGS=" --console=plain";
 fi
 declare -a EXCLUDE=(".git" "test" "build" "gen" "gradle");
