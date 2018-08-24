@@ -54,3 +54,12 @@ jobs:
       - run:
           name: Build
           command: ./build.sh
+      - store_artifacts:
+          path: app-android/build/reports
+          destination: reports
+      - store_artifacts:
+          path: app-android/build/outputs/apk
+          destination: apks
+      - store_artifacts:
+          path: commons-android/build/reports
+          destination: commons-android-reports
