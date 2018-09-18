@@ -1,0 +1,61 @@
+language: android
+jdk: oraclejdk8
+
+sudo: false
+install: true
+
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+    - $HOME/.android/build-cache
+
+env:
+  global:
+    - ANDROID_API_LEVEL=27
+    - ANDROID_BUILD_TOOLS_VERSION=27.0.3
+
+android:
+  components:
+    - tools # to get the new `repository-11.xml`
+    - platform-tools
+    - tools # to install Android SDK tools
+    - build-tools-$ANDROID_BUILD_TOOLS_VERSION
+    - android-$ANDROID_API_LEVEL
+    - extra-google-google_play_services
+    - extra-google-m2repository
+    - extra-android-m2repository
+  licenses:
+    - 'android-sdk-preview-license-.+'
+    - 'android-sdk-license-.+'
+    - 'google-gdk-license-.+'
+
+branches:
+  only:
+    - master
+    - mmathieum
+
+git:
+  submodules: false
+
+before_install:
+ - git submodule update --init --recursive commons
+ - git submodule update --init --recursive parser
+ - git submodule update --init --recursive agency-parser
+ - git submodule update --init --recursive commons-android
+ - git submodule update --init --recursive app-android
+ - chmod +x gradlew
+ - chmod +x build.sh
+ - chmod +x agency-parser/list_change.sh
+ - chmod +x app-android/build.sh
+ - chmod +x app-android/bump_version.sh
+ - chmod +x app-android/keys_*.sh
+ - echo "y" | sdkmanager --update
+
+script:
+ - ./build.sh
+
