@@ -25,17 +25,20 @@ if [[ -z "${GIT_BRANCH}" ]]; then
 	exit -1;
 fi
 echo "GIT_BRANCH: $GIT_BRANCH.";
-RESULT=-1;
+
 CONFIRM=false;
+
 IS_CI=false;
 if [[ ! -z "${CI}" ]]; then
 	IS_CI=true;
 fi
 echo "/build.sh: IS_CI '${IS_CI}'";
+
 GRADLE_ARGS="";
 if [ $IS_CI = true ]; then
 	GRADLE_ARGS=" --console=plain";
 fi
+
 declare -a EXCLUDE=(".git" "test" "build" "gen" "gradle");
 
 echo "> CLEANING FOR '$AGENCY_ID'...";
@@ -62,8 +65,10 @@ for d in ${PWD}/* ; do
 		else
 			echo "> GIT repo up-to-date in '$DIRECTORY' (local:$GIT_REV_PARSE_HEAD|origin/$GIT_BRANCH:$GIT_REV_PARSE_REMOTE_BRANCH).";
 		fi
+
 		git checkout $GIT_BRANCH;
 		checkResult $? $CONFIRM;
+
 		git pull;
 		checkResult $? $CONFIRM;
 		echo "> GIT cleaning in '$DIRECTORY'... DONE";
@@ -71,32 +76,46 @@ for d in ${PWD}/* ; do
 		echo "--------------------------------------------------------------------------------";
 	fi
 done
-echo "> CLEANING FOR '$AGENCY_ID'... (GRADLE BUILD)";
-./gradlew :parser:clean :parser:build $GRADLE_ARGS;
-checkResult $? $CONFIRM;
-./gradlew :agency-parser:clean :agency-parser:build $GRADLE_ARGS;
-checkResult $? $CONFIRM;
-echo "> CLEANING FOR '$AGENCY_ID'... DONE";
 
-echo "> PARSING DATA FOR '$AGENCY_ID'...";
-cd agency-parser;
-./download.sh;
-checkResult $? $CONFIRM;
-./parse_current.sh;
-checkResult $? $CONFIRM;
-./parse_next.sh;
-checkResult $? $CONFIRM;
-./list_change.sh;
-checkResult $? $CONFIRM;
-cd ..;
-echo "> PARSING DATA FOR '$AGENCY_ID'... DONE";
+if ! [ -d "agency-parser" ]; then
+	echo "> CLEANING FOR '$AGENCY_ID'... (GRADLE BUILD)";
+	./gradlew :parser:clean :parser:build $GRADLE_ARGS;
+	checkResult $? $CONFIRM;
+
+	./gradlew :agency-parser:clean :agency-parser:build $GRADLE_ARGS;
+	checkResult $? $CONFIRM;
+	echo "> CLEANING FOR '$AGENCY_ID'... DONE";
+
+	echo "> PARSING DATA FOR '$AGENCY_ID'...";
+	cd agency-parser;
+
+	./download.sh;
+	checkResult $? $CONFIRM;
+
+	./parse_current.sh;
+	checkResult $? $CONFIRM;
+
+	./parse_next.sh;
+	checkResult $? $CONFIRM;
+
+	./list_change.sh;
+	checkResult $? $CONFIRM;
+
+	cd ..;
+	echo "> PARSING DATA FOR '$AGENCY_ID'... DONE";
+else
+	echo "> SKIP PARSING FOR '$AGENCY_ID'.";
+fi
 
 echo "> BUILDING ANDROID APP FOR '$AGENCY_ID'...";
 cd app-android;
+
 ./bump_version.sh
 checkResult $? $CONFIRM;
+
 ./build.sh
 checkResult $? $CONFIRM;
+
 cd ..;
 echo "> BUILDING ANDROID APP FOR '$AGENCY_ID'... DONE";
 echo "--------------------------------------------------------------------------------";
