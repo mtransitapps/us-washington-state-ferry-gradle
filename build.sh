@@ -49,16 +49,16 @@ for d in ${PWD}/* ; do
 		echo "--------------------------------------------------------------------------------";
 		continue;
 	fi
-	if contains $DIRECTORY ${EXCLUDE[@]}; then
+	if contains ${DIRECTORY} ${EXCLUDE[@]}; then
 		echo "> Skip GIT cleaning in excluded directory '$DIRECTORY'.";
 		echo "--------------------------------------------------------------------------------";
 		continue;
 	fi
 	if [ -d "$d" ]; then
-		cd $d;
+		cd ${d};
 		echo "> GIT cleaning in '$DIRECTORY'...";
 		GIT_REV_PARSE_HEAD=$(git rev-parse HEAD);
-		GIT_REV_PARSE_REMOTE_BRANCH=$(git rev-parse origin/$GIT_BRANCH);
+		GIT_REV_PARSE_REMOTE_BRANCH=$(git rev-parse origin/${GIT_BRANCH});
 		if [ "$GIT_REV_PARSE_HEAD" != "$GIT_REV_PARSE_REMOTE_BRANCH" ]; then
 			echo "> GIT repo outdated in '$DIRECTORY' (local:$GIT_REV_PARSE_HEAD|origin/$GIT_BRANCH:$GIT_REV_PARSE_REMOTE_BRANCH).";
 			exit -1;
@@ -66,40 +66,48 @@ for d in ${PWD}/* ; do
 			echo "> GIT repo up-to-date in '$DIRECTORY' (local:$GIT_REV_PARSE_HEAD|origin/$GIT_BRANCH:$GIT_REV_PARSE_REMOTE_BRANCH).";
 		fi
 
-		git checkout $GIT_BRANCH;
-		checkResult $? $CONFIRM;
+		git checkout ${GIT_BRANCH};
+		checkResult $? ${CONFIRM};
 
 		git pull;
-		checkResult $? $CONFIRM;
+		checkResult $? ${CONFIRM};
 		echo "> GIT cleaning in '$DIRECTORY'... DONE";
 		cd ..;
 		echo "--------------------------------------------------------------------------------";
 	fi
 done
 
-if ! [ -d "agency-parser" ]; then
+if [ -d "agency-parser" ]; then
 	echo "> CLEANING FOR '$AGENCY_ID'... (GRADLE BUILD)";
-	./gradlew :parser:clean :parser:build $GRADLE_ARGS;
-	checkResult $? $CONFIRM;
+	./gradlew :parser:clean :parser:build ${GRADLE_ARGS};
+	checkResult $? ${CONFIRM};
 
-	./gradlew :agency-parser:clean :agency-parser:build $GRADLE_ARGS;
-	checkResult $? $CONFIRM;
+	./gradlew :agency-parser:clean :agency-parser:build ${GRADLE_ARGS};
+	checkResult $? ${CONFIRM};
 	echo "> CLEANING FOR '$AGENCY_ID'... DONE";
 
 	echo "> PARSING DATA FOR '$AGENCY_ID'...";
 	cd agency-parser;
 
+    chmod +x download.sh;
+    checkResult $? ${CONFIRM};
 	./download.sh;
-	checkResult $? $CONFIRM;
+	checkResult $? ${CONFIRM};
 
+    chmod +x parse_current.sh;
+    checkResult $? ${CONFIRM};
 	./parse_current.sh;
-	checkResult $? $CONFIRM;
+	checkResult $? ${CONFIRM};
 
+    chmod +x parse_next.sh;
+    checkResult $? ${CONFIRM};
 	./parse_next.sh;
-	checkResult $? $CONFIRM;
+	checkResult $? ${CONFIRM};
 
+    chmod +x list_change.sh;
+    checkResult $? ${CONFIRM};
 	./list_change.sh;
-	checkResult $? $CONFIRM;
+	checkResult $? ${CONFIRM};
 
 	cd ..;
 	echo "> PARSING DATA FOR '$AGENCY_ID'... DONE";
@@ -110,11 +118,15 @@ fi
 echo "> BUILDING ANDROID APP FOR '$AGENCY_ID'...";
 cd app-android;
 
+chmod +x bump_version.sh;
+checkResult $? ${CONFIRM};
 ./bump_version.sh
-checkResult $? $CONFIRM;
+checkResult $? ${CONFIRM};
 
+chmod +x build.sh;
+checkResult $? ${CONFIRM};
 ./build.sh
-checkResult $? $CONFIRM;
+checkResult $? ${CONFIRM};
 
 cd ..;
 echo "> BUILDING ANDROID APP FOR '$AGENCY_ID'... DONE";

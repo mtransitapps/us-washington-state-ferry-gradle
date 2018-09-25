@@ -26,18 +26,6 @@ jobs:
       - run:
           name: build.sh permissions
           command: sudo chmod +x build.sh
-      - run:
-          name: agency-parser/list_change.sh permissions
-          command: sudo chmod +x agency-parser/list_change.sh
-      - run:
-          name: app-android/build.sh permissions
-          command: sudo chmod +x app-android/build.sh
-      - run:
-          name: app-android/keys_*.sh permissions
-          command: sudo chmod +x app-android/keys_*.sh
-      - run:
-          name: Download Dependencies
-          command: ./gradlew androidDependencies --console=plain
       - save_cache:
           paths:
             - ~/.gradle
