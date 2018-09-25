@@ -43,11 +43,8 @@ git:
   submodules: false
 
 before_install:
- - git submodule update --init --recursive commons
- - git submodule update --init --recursive parser
- - git submodule update --init --recursive agency-parser
- - git submodule update --init --recursive commons-android
- - git submodule update --init --recursive app-android
+ - chmod +x checkout_submodules.sh
+ - ./checkout_submodules.sh
  - chmod +x gradlew
  - chmod +x build.sh
  - chmod +x agency-parser/list_change.sh
