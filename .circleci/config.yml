@@ -5,7 +5,6 @@ jobs:
     docker:
       - image: circleci/android:api-28-alpha
     environment:
-      TERM: xterm-256color
       JVM_OPTS: -Xmx3200m
     steps:
       - run:
@@ -19,20 +18,35 @@ jobs:
           name: Checkout submodules
           command: ./checkout_submodules.sh
       - restore_cache:
-          key: jars-{{ checksum "build.gradle" }}-{{ checksum "commons-android/build.gradle" }}-{{ checksum "commons-android/commons-android.gradle" }}-{{ checksum "parser/build.gradle" }}-{{ checksum "agency-parser/build.gradle" }}-{{ checksum "app-android/build.gradle" }}
+          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+      - run:
+          name: init_cache_key.sh permissions
+          command: sudo chmod +x init_cache_key.sh
+      - run:
+          name: Generate gradle cache key
+          command: ./init_cache_key.sh
+      - restore_cache:
+          key: gradle-cache-{{ checksum "gradle_cache_key_checksum.txt" }}
       - run:
           name: gradlew permissions
-          command: sudo chmod +x gradlew
+          command: sudo chmod +x ./gradlew
+      - run:
+          name: Download Dependencies
+          command: ./gradlew androidDependencies --console=plain
       - run:
           name: build.sh permissions
           command: sudo chmod +x build.sh
-      - save_cache:
-          paths:
-            - ~/.gradle
-          key: jars-{{ checksum "build.gradle" }}-{{ checksum "commons-android/build.gradle" }}-{{ checksum "commons-android/commons-android.gradle" }}-{{ checksum "parser/build.gradle" }}-{{ checksum "agency-parser/build.gradle" }}-{{ checksum "app-android/build.gradle" }}
       - run:
           name: Build
           command: ./build.sh
+      - save_cache:
+          paths:
+            - ~/.gradle/caches/
+          key: gradle-cache-{{ checksum "gradle_cache_key_checksum.txt" }}
+      - save_cache:
+          paths:
+            - ~/.gradle/wrapper/
+          key: gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
       - store_artifacts:
           path: app-android/build/reports
           destination: reports
