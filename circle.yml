@@ -1,33 +1,28 @@
+# DEPRECATED
+# MIGRATED TO CIRCLE CI 2.0 in .circleci/config.yml
 machine:
-    environment:
-        ANDROID_API_LEVEL: 27
-        ANDROID_BUILD_TOOLS_VERSION: 27.0.3
     java:
         version: oraclejdk8
-    timezone:
-        America/Montreal
 
 checkout:
   post:
-    - git submodule update --init --recursive commons
     - git submodule update --init --recursive commons-android
-    - git submodule update --init --recursive parser
-    - git submodule update --init --recursive agency-parser
-    - git submodule update --init --recursive app-android
+    - git submodule update --init --recursive mtransit-for-android
     - chmod +x gradlew
-    - chmod +x build.sh
-    - chmod +x app-android/build.sh
+
+test:
+  post:
+    - ./gradlew build assemble --console=plain
+    - cp -r mtransit-for-android/build/outputs/apk $CIRCLE_ARTIFACTS
+    - cp -r mtransit-for-android/build/reports $CIRCLE_ARTIFACTS
+    - ./gradlew :mtransit-for-android:sonarqube --console=plain -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=mtransitapps-github -Dsonar.login=$MT_SONAR_LOGIN
 
 dependencies:
     override:
         - echo y | android update sdk --no-ui --all --filter "tool" # required for sdkmanager
         - echo y | $ANDROID_HOME/tools/bin/sdkmanager "tools"
         - echo y | $ANDROID_HOME/tools/bin/sdkmanager "platform-tools"
-        - echo y | $ANDROID_HOME/tools/bin/sdkmanager "build-tools;$ANDROID_BUILD_TOOLS_VERSION"
+        - echo y | $ANDROID_HOME/tools/bin/sdkmanager "build-tools;27.0.3"
         - echo y | $ANDROID_HOME/tools/bin/sdkmanager "extras;android;m2repository"
         - echo y | $ANDROID_HOME/tools/bin/sdkmanager "extras;google;google_play_services"
         - echo y | $ANDROID_HOME/tools/bin/sdkmanager "extras;google;m2repository"
-
-test:
-  override:
-    - ./build.sh

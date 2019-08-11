@@ -1,5 +1,5 @@
 #!/bin/bash
-source commons/commons.sh
+source commons/commons.sh;
 echo "================================================================================";
 echo "> RUN ALL...";
 echo "--------------------------------------------------------------------------------";
@@ -7,22 +7,34 @@ BEFORE_DATE=$(date +%D-%X);
 BEFORE_DATE_SEC=$(date +%s);
 
 CURRENT_PATH=$(pwd);
-CURRENT_DIRECTORY=$(basename $CURRENT_PATH);
+CURRENT_DIRECTORY=$(basename ${CURRENT_PATH});
 AGENCY_ID=$(basename -s -gradle ${CURRENT_DIRECTORY});
 
 GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD);
-if [ "$GIT_BRANCH" = "HEAD" ]; then
+if [[ "$GIT_BRANCH" = "HEAD" ]]; then
 	GIT_BRANCH="";
 fi
 if [[ -z "${GIT_BRANCH}" ]]; then
-	GIT_BRANCH=$TRAVIS_BRANCH;
-	if [ "$GIT_BRANCH" = "HEAD" ]; then
+	GIT_BRANCH=${TRAVIS_PULL_REQUEST_BRANCH}; #TravicCI
+	if [[ "$GIT_BRANCH" = "HEAD" ]]; then
+		GIT_BRANCH="";
+	fi
+fi
+if [[ -z "${GIT_BRANCH}" ]]; then
+	GIT_BRANCH=${TRAVIS_BRANCH}; #TravicCI
+	if [[ "$GIT_BRANCH" = "HEAD" ]]; then
+		GIT_BRANCH="";
+	fi
+fi
+if [[ -z "${GIT_BRANCH}" ]]; then
+	GIT_BRANCH=${CI_COMMIT_REF_NAME}; #GitLab
+	if [[ "$GIT_BRANCH" = "HEAD" ]]; then
 		GIT_BRANCH="";
 	fi
 fi
 if [[ -z "${GIT_BRANCH}" ]]; then
 	echo "GIT_BRANCH not found!";
-	exit -1;
+	exit 1;
 fi
 echo "GIT_BRANCH: $GIT_BRANCH.";
 
@@ -32,10 +44,10 @@ IS_CI=false;
 if [[ ! -z "${CI}" ]]; then
 	IS_CI=true;
 fi
-echo "/build.sh: IS_CI '${IS_CI}'";
+echo "/build.sh > IS_CI:'${IS_CI}'";
 
 GRADLE_ARGS="";
-if [ $IS_CI = true ]; then
+if [[ ${IS_CI} = true ]]; then
 	GRADLE_ARGS=" --console=plain";
 fi
 
@@ -44,7 +56,7 @@ declare -a EXCLUDE=(".git" "test" "build" "gen" "gradle");
 echo "> CLEANING FOR '$AGENCY_ID'...";
 for d in ${PWD}/* ; do
 	DIRECTORY=$(basename ${d});
-	if ! [ -d "$d" ]; then
+	if ! [[ -d "$d" ]]; then
 		echo "> Skip GIT cleaning (not a directory) '$DIRECTORY'.";
 		echo "--------------------------------------------------------------------------------";
 		continue;
@@ -54,14 +66,14 @@ for d in ${PWD}/* ; do
 		echo "--------------------------------------------------------------------------------";
 		continue;
 	fi
-	if [ -d "$d" ]; then
-		cd ${d};
+	if [[ -d "$d" ]]; then
+		cd ${d} || exit;
 		echo "> GIT cleaning in '$DIRECTORY'...";
 		GIT_REV_PARSE_HEAD=$(git rev-parse HEAD);
 		GIT_REV_PARSE_REMOTE_BRANCH=$(git rev-parse origin/${GIT_BRANCH});
-		if [ "$GIT_REV_PARSE_HEAD" != "$GIT_REV_PARSE_REMOTE_BRANCH" ]; then
+		if [[ "$GIT_REV_PARSE_HEAD" != "$GIT_REV_PARSE_REMOTE_BRANCH" ]]; then
 			echo "> GIT repo outdated in '$DIRECTORY' (local:$GIT_REV_PARSE_HEAD|origin/$GIT_BRANCH:$GIT_REV_PARSE_REMOTE_BRANCH).";
-			exit -1;
+			exit 1;
 		else
 			echo "> GIT repo up-to-date in '$DIRECTORY' (local:$GIT_REV_PARSE_HEAD|origin/$GIT_BRANCH:$GIT_REV_PARSE_REMOTE_BRANCH).";
 		fi
@@ -77,7 +89,7 @@ for d in ${PWD}/* ; do
 	fi
 done
 
-if [ -d "agency-parser" ]; then
+if [[ -d "agency-parser" ]]; then
 	echo "> CLEANING FOR '$AGENCY_ID'... (GRADLE BUILD)";
 	./gradlew :parser:clean :parser:build ${GRADLE_ARGS};
 	checkResult $? ${CONFIRM};
@@ -87,7 +99,7 @@ if [ -d "agency-parser" ]; then
 	echo "> CLEANING FOR '$AGENCY_ID'... DONE";
 
 	echo "> PARSING DATA FOR '$AGENCY_ID'...";
-	cd agency-parser;
+	cd agency-parser || exit;
 
     chmod +x download.sh;
     checkResult $? ${CONFIRM};
@@ -116,7 +128,7 @@ else
 fi
 
 echo "> BUILDING ANDROID APP FOR '$AGENCY_ID'...";
-cd app-android;
+cd app-android || exit;
 
 chmod +x bump_version.sh;
 checkResult $? ${CONFIRM};
